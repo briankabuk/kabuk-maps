@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kabuk | Kyoto & Kameoka Signature Itinerary Map</title>
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css" rel="stylesheet" />
+<style>
+  body { margin: 0; padding: 0; }
+  #kabuk-map { width: 100%; height: 100vh; }
+</style>
+</head>
+<body>
+<div id="kabuk-map"></div>
+<script>
+  mapboxgl.accessToken = "pk.eyJ1IjoiYnJpYW5rYWJ1ayIsImEiOiJjbWh1dHNza2UwM2pqMnJweTNnaTVtNDJuIn0.LFhnJqW6kZcYW9xJ6Fd86A";
+
+  const points = [
+    { day: 1, name: "Arrival – Kyoto Station / Nijo Castle", coords: [135.748, 35.011] },
+    { day: 2, name: "Fushimi Inari Taisha / Kinkaku-ji / Ryoan-ji", coords: [135.77, 35.034] },
+    { day: 3, name: "Gion & Higashiyama", coords: [135.780, 35.004] },
+    { day: 4, name: "Pontocho / Sanjo Riverside", coords: [135.768, 35.007] },
+    { day: 5, name: "Transfer – Kameoka Onsen (Satoyama no Kyujitsu)", coords: [135.566, 35.014] },
+    { day: 6, name: "Yunohana Countryside / Farm Café Area", coords: [135.545, 35.018] },
+    { day: 7, name: "Return via Arashiyama", coords: [135.67, 35.013] }
+  ];
+
+  const map = new mapboxgl.Map({
+    container: "kabuk-map",
+    style: "mapbox://styles/briankabuk/cmhuu1l57008j01s26qxs9b55",
+    center: [135.7, 35.02],
+    zoom: 10.2
+  });
+
+  map.on("load", () => {
+    map.addSource("kabuk-itinerary", {
+      type: "geojson",
+      data: {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: points.map(p => p.coords)
+        }
+      }
+    });
+
+    map.addLayer({
+      id: "kabuk-itinerary-line",
+      type: "line",
+      source: "kabuk-itinerary",
+      paint: { "line-color": "#7C3AED", "line-width": 3 }
+    });
+
+    points.forEach(p => {
+      const el = document.createElement("div");
+      el.style.background = "#7C3AED";
+      el.style.color = "#fff";
+      el.style.width = "26px";
+      el.style.height = "26px";
+      el.style.borderRadius = "50%";
+      el.style.display = "flex";
+      el.style.alignItems = "center";
+      el.style.justifyContent = "center";
+      el.style.fontSize = "12px";
+      el.style.fontWeight = "600";
+      el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.25)";
+      el.innerText = p.day;
+      new mapboxgl.Marker(el)
+        .setLngLat(p.coords)
+        .setPopup(new mapboxgl.Popup().setText(`Day ${p.day}: ${p.name}`))
+        .addTo(map);
+    });
+
+    const bounds = new mapboxgl.LngLatBounds();
+    points.forEach(p => bounds.extend(p.coords));
+    map.fitBounds(bounds, { padding: 50 });
+  });
+</script>
+</body>
+</html>
