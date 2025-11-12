@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kabuk | The Romantic Itinerary Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    body { margin: 0; padding: 0; }
+    #kabuk-map { width: 100%; height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="kabuk-map"></div>
+  <script>
+    mapboxgl.accessToken = "pk.eyJ1IjoiYnJpYW5rYWJ1ayIsImEiOiJjbWh1dHNza2UwM2pqMnJweTNnaTVtNDJuIn0.LFhnJqW6kZcYW9xJ6Fd86A";
+
+    const points = [
+      { day: 1, name: "Tokyo – Onsen Ryokan Yuen Shinjuku (Arrival)", coords: [139.703, 35.690] },
+      { day: 2, name: "Tokyo – Meiji Shrine / Omotesando", coords: [139.709, 35.672] },
+      { day: 3, name: "Tokyo – Asakusa / Ginza", coords: [139.794, 35.711] },
+      { day: 4, name: "Hakone – Fujiya Hotel (Arrival)", coords: [139.048, 35.243] },
+      { day: 5, name: "Lake Ashi / Hakone Shrine", coords: [139.029, 35.204] },
+      { day: 6, name: "Hakone – Pola Museum / Onsen Spa", coords: [139.050, 35.250] },
+      { day: 7, name: "Kyoto – Hotel Canata Kyoto (Arrival)", coords: [135.748, 35.010] },
+      { day: 8, name: "Kyoto – Gion / Higashiyama", coords: [135.780, 35.004] },
+      { day: 9, name: "Kyoto – Nijo Castle / Departure", coords: [135.748, 35.010] }
+    ];
+
+    const map = new mapboxgl.Map({
+      container: "kabuk-map",
+      style: "mapbox://styles/briankabuk/cmhuu1l57008j01s26qxs9b55",
+      center: [137.5, 35.3],
+      zoom: 5.2
+    });
+
+    map.on("load", () => {
+      map.addSource("kabuk-romantic", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: points.map(p => p.coords)
+          }
+        }
+      });
+
+      map.addLayer({
+        id: "kabuk-romantic-line",
+        type: "line",
+        source: "kabuk-romantic",
+        paint: { "line-color": "#EC4899", "line-width": 3 }
+      });
+
+      points.forEach(p => {
+        const el = document.createElement("div");
+        el.style.background = "#EC4899";
+        el.style.color = "#fff";
+        el.style.width = "26px";
+        el.style.height = "26px";
+        el.style.borderRadius = "50%";
+        el.style.display = "flex";
+        el.style.alignItems = "center";
+        el.style.justifyContent = "center";
+        el.style.fontSize = "12px";
+        el.style.fontWeight = "600";
+        el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.25)";
+        el.innerText = p.day;
+
+        new mapboxgl.Marker(el)
+          .setLngLat(p.coords)
+          .setPopup(new mapboxgl.Popup().setText(`Day ${p.day}: ${p.name}`))
+          .addTo(map);
+      });
+
+      const bounds = new mapboxgl.LngLatBounds();
+      points.forEach(p => bounds.extend(p.coords));
+      map.fitBounds(bounds, { padding: 50 });
+    });
+  </script>
+</body>
+</html>
