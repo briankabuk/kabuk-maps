@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kabuk | The Solo Seeker Itinerary Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    body { margin: 0; padding: 0; }
+    #kabuk-map { width: 100%; height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="kabuk-map"></div>
+  <script>
+    mapboxgl.accessToken = "pk.eyJ1IjoiYnJpYW5rYWJ1ayIsImEiOiJjbWh1dHNza2UwM2pqMnJweTNnaTVtNDJuIn0.LFhnJqW6kZcYW9xJ6Fd86A";
+
+    const points = [
+      { day: 1, name: "Kyoto – Hotel Tou Nishinotoin Kyoto (Arrival)", coords: [135.748, 35.010] },
+      { day: 2, name: "Kyoto – Nanzen-ji / Nishiki Market", coords: [135.775, 35.013] },
+      { day: 3, name: "Kyoto – Kiyomizu-dera / Kamogawa River", coords: [135.785, 34.994] },
+      { day: 4, name: "Flight Kyoto → Nagasaki (SETRE GLOVER’S HOUSE NAGASAKI)", coords: [129.873, 32.739] },
+      { day: 5, name: "Nagasaki – Glover Garden / Dutch Slope", coords: [129.873, 32.738] },
+      { day: 6, name: "Nagasaki – Departure / City Walk", coords: [129.868, 32.747] }
+    ];
+
+    const map = new mapboxgl.Map({
+      container: "kabuk-map",
+      style: "mapbox://styles/briankabuk/cmhuu1l57008j01s26qxs9b55",
+      center: [133, 34],
+      zoom: 5.3
+    });
+
+    map.on("load", () => {
+      map.addSource("kabuk-soloseeker", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: points.map(p => p.coords)
+          }
+        }
+      });
+
+      map.addLayer({
+        id: "kabuk-soloseeker-line",
+        type: "line",
+        source: "kabuk-soloseeker",
+        paint: { "line-color": "#6366F1", "line-width": 3 }
+      });
+
+      points.forEach(p => {
+        const el = document.createElement("div");
+        el.style.background = "#6366F1";
+        el.style.color = "#fff";
+        el.style.width = "26px";
+        el.style.height = "26px";
+        el.style.borderRadius = "50%";
+        el.style.display = "flex";
+        el.style.alignItems = "center";
+        el.style.justifyContent = "center";
+        el.style.fontSize = "12px";
+        el.style.fontWeight = "600";
+        el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.25)";
+        el.innerText = p.day;
+
+        new mapboxgl.Marker(el)
+          .setLngLat(p.coords)
+          .setPopup(new mapboxgl.Popup().setText(`Day ${p.day}: ${p.name}`))
+          .addTo(map);
+      });
+
+      const bounds = new mapboxgl.LngLatBounds();
+      points.forEach(p => bounds.extend(p.coords));
+      map.fitBounds(bounds, { padding: 50 });
+    });
+  </script>
+</body>
+</html>
