@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kabuk | The Foodie Itinerary Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    body { margin: 0; padding: 0; }
+    #kabuk-map { width: 100%; height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="kabuk-map"></div>
+  <script>
+    // your public token
+    mapboxgl.accessToken = "pk.eyJ1IjoiYnJpYW5rYWJ1ayIsImEiOiJjbWh1dHNza2UwM2pqMnJweTNnaTVtNDJuIn0.LFhnJqW6kZcYW9xJ6Fd86A";
+
+    // day-by-day for The Foodie
+    const points = [
+      { day: 1, name: "Day 1 – Arrive Tokyo (NOHGA Akihabara)", coords: [139.773, 35.700] },
+      { day: 2, name: "Day 2 – Tsukiji / Sushi / Ginza depachika", coords: [139.770, 35.665] },
+      { day: 3, name: "Day 3 – Asakusa / Izakaya tour", coords: [139.798, 35.714] },
+      { day: 4, name: "Day 4 – Ramen / Kappabashi", coords: [139.789, 35.711] },
+      { day: 5, name: "Day 5 – Osaka arrival / Dotonbori", coords: [135.501, 34.668] },
+      { day: 6, name: "Day 6 – Kuromon Market / Shinsaibashi", coords: [135.506, 34.667] },
+      { day: 7, name: "Day 7 – Osaka cafes / departure", coords: [135.498, 34.676] },
+    ];
+
+    const map = new mapboxgl.Map({
+      container: "kabuk-map",
+      style: "mapbox://styles/briankabuk/cmhuu1l57008j01s26qxs9b55",
+      center: [137.5, 35.5], // between Tokyo and Osaka
+      zoom: 4.7
+    });
+
+    map.on("load", () => {
+      // line from Tokyo (days 1–4) to Osaka (days 5–7)
+      map.addSource("kabuk-foodie", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: points.map(p => p.coords)
+          }
+        }
+      });
+
+      map.addLayer({
+        id: "kabuk-foodie-line",
+        type: "line",
+        source: "kabuk-foodie",
+        paint: {
+          "line-color": "#7C3AED",
+          "line-width": 3
+        }
+      });
+
+      // markers
+      points.forEach(p => {
+        const el = document.createElement("div");
+        el.style.background = "#7C3AED";
+        el.style.color = "#fff";
+        el.style.width = "26px";
+        el.style.height = "26px";
+        el.style.borderRadius = "50%";
+        el.style.display = "flex";
+        el.style.alignItems = "center";
+        el.style.justifyContent = "center";
+        el.style.fontSize = "12px";
+        el.style.fontWeight = "600";
+        el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.25)";
+        el.innerText = p.day;
+
+        new mapboxgl.Marker(el)
+          .setLngLat(p.coords)
+          .setPopup(new mapboxgl.Popup().setText(p.name))
+          .addTo(map);
+      });
+
+      // fit to all points
+      const bounds = new mapboxgl.LngLatBounds();
+      points.forEach(p => bounds.extend(p.coords));
+      map.fitBounds(bounds, { padding: 50 });
+    });
+  </script>
+</body>
+</html>
