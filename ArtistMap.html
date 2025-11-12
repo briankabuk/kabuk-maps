@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kabuk | The Artist Itinerary Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    body { margin: 0; padding: 0; }
+    #kabuk-map { width: 100%; height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="kabuk-map"></div>
+  <script>
+    mapboxgl.accessToken = "pk.eyJ1IjoiYnJpYW5rYWJ1ayIsImEiOiJjbWh1dHNza2UwM2pqMnJweTNnaTVtNDJuIn0.LFhnJqW6kZcYW9xJ6Fd86A";
+
+    const points = [
+      { day: 1, name: "Tokyo – Park Hotel Tokyo (Arrival)", coords: [139.763, 35.664] },
+      { day: 2, name: "Tokyo – Harajuku / Omotesando Galleries", coords: [139.708, 35.670] },
+      { day: 3, name: "Tokyo – Roppongi / Kiyosumi Gallery Loop", coords: [139.746, 35.665] },
+      { day: 4, name: "Tokyo – Creative Workshops / Nakameguro", coords: [139.698, 35.643] },
+      { day: 5, name: "Kyoto – node hotel", coords: [135.757, 35.003] },
+      { day: 6, name: "Kyoto – Textile / Ceramic Studios", coords: [135.773, 35.015] },
+      { day: 7, name: "Kyoto – Gion / Pontocho", coords: [135.778, 35.005] },
+      { day: 8, name: "Kanazawa – Korinkyo Hotel", coords: [136.655, 36.561] },
+      { day: 9, name: "Kanazawa – 21st Century Museum / Kenrokuen", coords: [136.656, 36.561] },
+      { day: 10, name: "Kanazawa Station / Departure", coords: [136.642, 36.578] }
+    ];
+
+    const map = new mapboxgl.Map({
+      container: "kabuk-map",
+      style: "mapbox://styles/briankabuk/cmhuu1l57008j01s26qxs9b55",
+      center: [136.2, 35.6],
+      zoom: 5.1
+    });
+
+    map.on("load", () => {
+      map.addSource("kabuk-artist", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: points.map(p => p.coords)
+          }
+        }
+      });
+
+      map.addLayer({
+        id: "kabuk-artist-line",
+        type: "line",
+        source: "kabuk-artist",
+        paint: { "line-color": "#7C3AED", "line-width": 3 }
+      });
+
+      points.forEach(p => {
+        const el = document.createElement("div");
+        el.style.background = "#7C3AED";
+        el.style.color = "#fff";
+        el.style.width = "26px";
+        el.style.height = "26px";
+        el.style.borderRadius = "50%";
+        el.style.display = "flex";
+        el.style.alignItems = "center";
+        el.style.justifyContent = "center";
+        el.style.fontSize = "12px";
+        el.style.fontWeight = "600";
+        el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.25)";
+        el.innerText = p.day;
+
+        new mapboxgl.Marker(el)
+          .setLngLat(p.coords)
+          .setPopup(new mapboxgl.Popup().setText(`Day ${p.day}: ${p.name}`))
+          .addTo(map);
+      });
+
+      const bounds = new mapboxgl.LngLatBounds();
+      points.forEach(p => bounds.extend(p.coords));
+      map.fitBounds(bounds, { padding: 50 });
+    });
+  </script>
+</body>
+</html>
