@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kabuk | The Adventurer Itinerary Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    body { margin: 0; padding: 0; }
+    #kabuk-map { width: 100%; height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="kabuk-map"></div>
+  <script>
+    // Kabuk public token
+    mapboxgl.accessToken = "pk.eyJ1IjoiYnJpYW5rYWJ1ayIsImEiOiJjbWh1dHNza2UwM2pqMnJweTNnaTVtNDJuIn0.LFhnJqW6kZcYW9xJ6Fd86A";
+
+    // Day-to-day anchor points: Tokyo → Noboribetsu → Asahikawa
+    const points = [
+      { day: 1, name: "Tokyo – Arrival / Akihabara", coords: [139.773, 35.700] },
+      { day: 2, name: "Tokyo – Mt. Takao day", coords: [139.243, 35.625] },
+      { day: 3, name: "Fly to Hokkaido – Noboribetsu", coords: [141.1495, 42.4122] },
+      { day: 4, name: "Hell Valley (Jigokudani)", coords: [141.155, 42.492] },
+      { day: 5, name: "Noboribetsu forests / lake area", coords: [141.13, 42.45] },
+      { day: 6, name: "Travel to Asahikawa", coords: [142.365, 43.7706] },
+      { day: 7, name: "Daisetsuzan / Asahidake access", coords: [142.89, 43.66] },
+      { day: 8, name: "Asahikawa area / Biei option", coords: [142.46, 43.62] },
+      { day: 9, name: "Departure from Asahikawa", coords: [142.45, 43.80] }
+    ];
+
+    const map = new mapboxgl.Map({
+      container: "kabuk-map",
+      style: "mapbox://styles/briankabuk/cmhuu1l57008j01s26qxs9b55",
+      center: [141.2, 41.9], // between Honshu and Hokkaido
+      zoom: 4.5
+    });
+
+    map.on("load", () => {
+      // route line through all points
+      map.addSource("kabuk-adventurer", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: points.map(p => p.coords)
+          }
+        }
+      });
+
+      map.addLayer({
+        id: "kabuk-adventurer-line",
+        type: "line",
+        source: "kabuk-adventurer",
+        paint: {
+          "line-color": "#7C3AED",
+          "line-width": 3
+        }
+      });
+
+      // numbered markers
+      points.forEach(p => {
+        const el = document.createElement("div");
+        el.style.background = "#7C3AED";
+        el.style.color = "#fff";
+        el.style.width = "26px";
+        el.style.height = "26px";
+        el.style.borderRadius = "50%";
+        el.style.display = "flex";
+        el.style.alignItems = "center";
+        el.style.justifyContent = "center";
+        el.style.fontSize = "12px";
+        el.style.fontWeight = "600";
+        el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.25)";
+        el.innerText = p.day;
+
+        new mapboxgl.Marker(el)
+          .setLngLat(p.coords)
+          .setPopup(new mapboxgl.Popup().setText(`Day ${p.day}: ${p.name}`))
+          .addTo(map);
+      });
+
+      // fit map to all points
+      const bounds = new mapboxgl.LngLatBounds();
+      points.forEach(p => bounds.extend(p.coords));
+      map.fitBounds(bounds, { padding: 50 });
+    });
+  </script>
+</body>
+</html>
